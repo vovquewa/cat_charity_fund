@@ -14,11 +14,6 @@ app = FastAPI(
 app.include_router(main_router)
 
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
-
 @app.on_event('startup')
 async def startup():
     await create_first_superuser()
