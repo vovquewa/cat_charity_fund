@@ -2,15 +2,12 @@ from datetime import datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from app.models import CharityProject, Donation, User
-
-# распределение свободных инветсиций по проектам
+from app.models import CharityProject, Donation
 
 
 async def distribution(
         session: AsyncSession,
 ):
-    # получаем список проектов у которых fully_invested = False
     charityprojects = await session.execute(
         select(CharityProject).where(
             CharityProject.fully_invested == bool(False)

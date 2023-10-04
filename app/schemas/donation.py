@@ -1,9 +1,7 @@
-from typing import Optional
 from datetime import datetime, timedelta
+from typing import Optional
 
 from pydantic import BaseModel, Field
-from sqlalchemy import Column, DateTime
-
 
 CREATE_DATE = (datetime.now() + timedelta(minutes=10)).isoformat(timespec='minutes')
 CLOSE_DATE = (datetime.now() + timedelta(minutes=60)).isoformat(timespec='minutes')
