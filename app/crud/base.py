@@ -1,7 +1,5 @@
-# app/crud/base.py
 from datetime import datetime
 from typing import Optional
-from random import randint
 
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select

@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, Text
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, Text
 
 from app.core.db import Base
 from app.models.dates import DatesModel
@@ -10,5 +10,6 @@ class Donation(DatesModel, Base):
     full_amount = Column(Integer, nullable=False)
     invested_amount = Column(Integer, nullable=False, default=0)
     fully_invested = Column(Boolean, nullable=False, default=False)
-    # create_date = Column(DateTime, nullable=False)
-    # close_date = Column(DateTime, nullable=True)
+
+    def __repr__(self):
+        return f'<Donation {self.id}>'
