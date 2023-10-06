@@ -1,6 +1,7 @@
 # app/crud/base.py
 from datetime import datetime
 from typing import Optional
+from random import randint
 
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select
@@ -37,19 +38,20 @@ class CRUDBase:
             self,
             obj_in,
             session: AsyncSession,
-            # Добавьте опциональный параметр user.
-            user: Optional[User] = None
+            user: Optional[User] = None,
+            commit: bool = True,
+
     ):
         obj_in_data = obj_in.dict()
-        # Если пользователь был передан...
         if user is not None:
-            # ...то дополнить словарь для создания модели.
             obj_in_data['user_id'] = user.id
         obj_in_data['create_date'] = datetime.now()
         db_obj = self.model(**obj_in_data)
         session.add(db_obj)
-        await session.commit()
-        await session.refresh(db_obj)
+        if commit:
+            await session.commit()
+            await session.refresh(db_obj)
+            return db_obj
         return db_obj
 
     async def update(

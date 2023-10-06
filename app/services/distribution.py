@@ -1,51 +1,27 @@
 from datetime import datetime
-
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 from app.models import CharityProject, Donation
 
 
-async def distribution(
-        session: AsyncSession,
+def distribution(
+        charityprojects: list[CharityProject],
+        donations: list[Donation]
 ):
-    charityprojects = await session.execute(
-        select(CharityProject).where(
-            CharityProject.fully_invested == bool(False)
-        )
-    )
-    charityprojects = charityprojects.scalars().all()
-    if charityprojects:
-        for charityproject in charityprojects:
-            donations = await session.execute(
-                select(Donation).where(
-                    Donation.fully_invested == bool(False)
-                )
+    for charityproject in charityprojects:
+        for donation in donations:
+            donation_remains = donation.full_amount - donation.invested_amount
+            charityproject_remains = (
+                charityproject.full_amount - charityproject.invested_amount
             )
-            donations = donations.scalars().all()
-            if donations:
-                for donation in donations:
-                    donation_remains = donation.full_amount - donation.invested_amount
-                    charityproject_remains = charityproject.full_amount - charityproject.invested_amount
-                    if donation_remains >= charityproject_remains:
-                        donation.invested_amount += charityproject_remains
-                        charityproject.invested_amount += charityproject_remains
-                        charityproject.fully_invested = bool(True)
-                        charityproject.close_date = datetime.now()
-                        if donation.invested_amount == donation.full_amount:
-                            donation.fully_invested = bool(True)
-                            donation.close_date = datetime.now()
-                        if charityproject.invested_amount == charityproject.full_amount:
-                            charityproject.fully_invested = bool(True)
-                            charityproject.close_date = datetime.now()
-                        if charityproject.fully_invested:
-                            break
-                    donation.invested_amount += donation_remains
-                    charityproject.invested_amount += donation_remains
-                    if donation.invested_amount == donation.full_amount:
-                        donation.fully_invested = bool(True)
-                        donation.close_date = datetime.now()
-            else:
+            amount_to_invest = min(donation_remains, charityproject_remains)
+            donation.invested_amount += amount_to_invest
+            charityproject.invested_amount += amount_to_invest
+            if donation.invested_amount == donation.full_amount:
+                donation.fully_invested = bool(True)
+                donation.close_date = datetime.now()
+            if charityproject.invested_amount == charityproject.full_amount:
+                charityproject.fully_invested = bool(True)
+                charityproject.close_date = datetime.now()
+            if charityproject.fully_invested:
                 break
-    await session.commit()
 
-    return charityprojects
+    return charityprojects, donations

@@ -12,6 +12,7 @@ from app.api.validators import (
 from app.core.db import get_async_session
 from app.core.user import current_superuser
 from app.crud.charityproject import charityproject_crud
+from app.crud.donation import donation_crud
 from app.schemas.charityproject import (
     CharityProjectCreate,
     CharityProjectCreateDB,
@@ -22,10 +23,24 @@ from app.services.distribution import distribution
 
 router = APIRouter()
 
+POST_DESCRIPTION = (
+    'Только для суперюзеров.\n\nСоздаёт благотворительный проект.'
+)
+GET_DESCRIPTION = 'Возвращает список всех проектов.'
+DELETE_DESCRIPTION = (
+    'Только для суперюзеров.\n\nУдаляет проект. '
+    'Нельзя удалить проект, в который уже были инвестированы средства, '
+    'его можно только закрыть.'
+)
+PATCH_DESCRIPTION = (
+    'Только для суперюзеров.\n\nЗакрытый проект нельзя редактировать; '
+    'нельзя установить требуемую сумму меньше уже вложенной.'
+)
+
 
 @router.post(
     '/',
-    description='Только для суперюзеров.\n\nСоздаёт благотворительный проект.',
+    description=POST_DESCRIPTION,
     response_model=CharityProjectCreateDB,
     dependencies=[Depends(current_superuser)],
     response_model_exclude_none=True,
@@ -35,15 +50,30 @@ async def create_charity_project(
         session: AsyncSession = Depends(get_async_session),
 ):
     await check_charityproject_name_duplicate(charityproject.name, session)
-    new_charityproject = await charityproject_crud.create(charityproject, session)
-    await distribution(session)
+    new_charityproject = await charityproject_crud.create(
+        charityproject, session, commit=False
+    )
+    new_charityproject.invested_amount = 0
+
+    charityprojects_to_distribute = await charityproject_crud.get_by_fully_invested(
+        fully_invested=bool(False), session=session
+    )
+    charityprojects_to_distribute.append(new_charityproject)
+    session.refresh(charityprojects_to_distribute)
+    distribution(
+        charityprojects_to_distribute,
+        await donation_crud.get_by_fully_invested(
+            fully_invested=bool(False), session=session
+        )
+    )
+    await session.commit()
     await session.refresh(new_charityproject)
     return new_charityproject
 
 
 @router.get(
     '/',
-    description='Возвращает список всех проектов.',
+    description=GET_DESCRIPTION,
     response_model=list[CharityProjectCreateDB],
     response_model_exclude={'close_date'},
 )
@@ -56,7 +86,7 @@ async def get_all_charity_projects(
 
 @router.delete(
     '/{project_id}',
-    description='Только для суперюзеров.\n\nУдаляет проект. Нельзя удалить проект, в который уже были инвестированы средства, его можно только закрыть.',
+    description=DELETE_DESCRIPTION,
     response_model=CharityProjectDB,
     dependencies=[Depends(current_superuser)],
 )
@@ -73,9 +103,8 @@ async def delete_charity_project(
 
 @router.patch(
     '/{project_id}',
-    description='Только для суперюзеров.\n\nЗакрытый проект нельзя редактировать; нельзя установить требуемую сумму меньше уже вложенной.',
+    description=PATCH_DESCRIPTION,
     response_model=CharityProjectDB,
-    # response_model_exclude_none=True,
     dependencies=[Depends(current_superuser)],
 )
 async def update_charity_project(
@@ -85,19 +114,12 @@ async def update_charity_project(
 ):
     charityproject = await check_charityproject_exists(project_id, session)
     if charityproject_in.name:
-        await check_charityproject_name_duplicate(charityproject_in.name, session)
-    charityproject = await charityproject_crud.update(charityproject, charityproject_in, session)
+        await check_charityproject_name_duplicate(
+            charityproject_in.name, session
+        )
+    charityproject = await charityproject_crud.update(
+        charityproject, charityproject_in, session
+    )
     await check_charityproject_full_amount(project_id, session)
     await check_charityproject_is_fully_invested(project_id, session)
     return charityproject
-
-
-@router.get(
-    '/test',
-)
-async def get_invested(
-        session: AsyncSession = Depends(get_async_session),
-):
-    distributions = await distribution(session)
-    print(distributions)
-    return distributions
