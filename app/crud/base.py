@@ -8,7 +8,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import User
 
 
-
 class CRUDBase:
 
     def __init__(self, model):
@@ -85,7 +84,7 @@ class CRUDBase:
     ) -> list:
         db_objs = await session.execute(
             select(self.model).where(
-                self.model.fully_invested == False
+                self.model.fully_invested == bool(False)
             )
         )
         return db_objs.scalars().all()
