@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Integer, String, Text
+from sqlalchemy import Column, String, Text
 
 from app.models.basetemplate import BaseTemplateModel
 

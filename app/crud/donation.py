@@ -18,16 +18,5 @@ class CRUDDonation(CRUDBase):
         )
         return reservations.scalars().all()
 
-    async def get_by_fully_invested(
-        self,
-        session: AsyncSession,
-    ) -> list[Donation]:
-        charityprojects = await session.execute(
-            select(Donation).where(
-                Donation.fully_invested == False
-            )
-        )
-        return charityprojects.scalars().all()
-
 
 donation_crud = CRUDDonation(Donation)

@@ -1,39 +1,26 @@
 from datetime import datetime
 from typing import Union
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.models import BaseTemplateModel, Donation, CharityProject
+from app.models import Donation, CharityProject
 
 
 def distribution(
-        charityprojects: list[CharityProject],
-        donations: list[Donation]
+    target: Union[CharityProject, Donation],
+    sources: list[Union[CharityProject, Donation]],
 ):
-    for charityproject in charityprojects:
-        for donation in donations:
-            donation_remains = donation.full_amount - donation.invested_amount
-            charityproject_remains = (
-                charityproject.full_amount - charityproject.invested_amount
-            )
-            amount_to_invest = min(donation_remains, charityproject_remains)
-            donation.invested_amount += amount_to_invest
-            charityproject.invested_amount += amount_to_invest
-            if donation.invested_amount == donation.full_amount:
-                donation.fully_invested = bool(True)
-                donation.close_date = datetime.now()
-            if charityproject.invested_amount == charityproject.full_amount:
-                charityproject.fully_invested = bool(True)
-                charityproject.close_date = datetime.now()
-            if charityproject.fully_invested:
-                break
+    for source in sources:
+        source_remains = source.full_amount - source.invested_amount
+        target_remains = target.full_amount - target.invested_amount
+        amount_to_invest = min(source_remains, target_remains)
+        source.invested_amount += amount_to_invest
+        target.invested_amount += amount_to_invest
+        if source.invested_amount == source.full_amount:
+            source.fully_invested = bool(True)
+            source.close_date = datetime.now()
+        if target.invested_amount == target.full_amount:
+            target.fully_invested = bool(True)
+            target.close_date = datetime.now()
+        if target.fully_invested:
+            break
 
-    return charityprojects, donations
-
-
-async def distribution_v2(
-        object_in: BaseTemplateModel,
-        session: AsyncSession
-        ) -> list[BaseTemplateModel]:
-    # not_fully_invested = await object_in.get_by_fully_invested(
-        pass
+    return sources

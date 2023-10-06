@@ -5,7 +5,8 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.user import User
+from app.models import User
+
 
 
 class CRUDBase:
@@ -77,3 +78,14 @@ class CRUDBase:
         await session.delete(db_obj)
         await session.commit()
         return db_obj
+
+    async def get_by_fully_invested(
+        self,
+        session: AsyncSession,
+    ) -> list:
+        db_objs = await session.execute(
+            select(self.model).where(
+                self.model.fully_invested == False
+            )
+        )
+        return db_objs.scalars().all()
