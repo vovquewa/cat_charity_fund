@@ -1,4 +1,5 @@
 from sqlalchemy import Column, DateTime
+from app.core.db import Base
 
 
 class DatesModel:

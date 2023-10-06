@@ -1,7 +1,7 @@
 from sqlalchemy import Boolean, Column, Integer, String, Text
 
 from app.core.db import Base
-from app.models.dates import DatesModel
+from app.models.basetemplate import DatesModel
 
 
 class CharityProject(DatesModel, Base):
@@ -12,4 +12,4 @@ class CharityProject(DatesModel, Base):
     fully_invested = Column(Boolean, nullable=False, default=False)
 
     def __repr__(self):
-        return f'<CharityProject {self.id}>'
+        return f'<CharityProject {vars(self)}>'
