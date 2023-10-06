@@ -1,5 +1,9 @@
 from datetime import datetime
-from app.models import CharityProject, Donation
+from typing import Union
+
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models import BaseTemplateModel, Donation, CharityProject
 
 
 def distribution(
@@ -25,3 +29,11 @@ def distribution(
                 break
 
     return charityprojects, donations
+
+
+async def distribution_v2(
+        object_in: BaseTemplateModel,
+        session: AsyncSession
+        ) -> list[BaseTemplateModel]:
+    # not_fully_invested = await object_in.get_by_fully_invested(
+        pass
