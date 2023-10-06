@@ -20,12 +20,11 @@ class CRUDDonation(CRUDBase):
 
     async def get_by_fully_invested(
         self,
-        fully_invested: bool,
         session: AsyncSession,
     ) -> list[Donation]:
         charityprojects = await session.execute(
             select(Donation).where(
-                Donation.fully_invested == fully_invested
+                Donation.fully_invested == False
             )
         )
         return charityprojects.scalars().all()

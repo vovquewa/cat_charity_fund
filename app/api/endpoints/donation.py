@@ -45,12 +45,12 @@ async def create_donation(
     )
     donation.invested_amount = 0
     donation_to_distribute = await donation_crud.get_by_fully_invested(
-        fully_invested=bool(False), session=session
+        session=session
     )
     donation_to_distribute.append(donation)
     distribution(
         await charityproject_crud.get_by_fully_invested(
-            fully_invested=bool(False), session=session
+            session=session
         ),
         donation_to_distribute
     )

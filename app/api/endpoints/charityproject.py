@@ -56,14 +56,14 @@ async def create_charity_project(
     new_charityproject.invested_amount = 0
 
     charityprojects_to_distribute = await charityproject_crud.get_by_fully_invested(
-        fully_invested=bool(False), session=session
+        session=session
     )
     charityprojects_to_distribute.append(new_charityproject)
     session.refresh(charityprojects_to_distribute)
     distribution(
         charityprojects_to_distribute,
         await donation_crud.get_by_fully_invested(
-            fully_invested=bool(False), session=session
+            session=session
         )
     )
     await session.commit()
