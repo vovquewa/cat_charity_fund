@@ -2,7 +2,7 @@ from sqlalchemy import Boolean, Column, DateTime, Integer
 from app.core.db import Base
 
 
-class BaseTemplateModel(Base):
+class BaseFieldsModel(Base):
     __abstract__ = True
 
     create_date = Column(DateTime, nullable=False)

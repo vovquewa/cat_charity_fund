@@ -54,6 +54,7 @@ async def create_charity_project(
         charityproject, session, commit=False
     )
     new_charityproject.invested_amount = 0
+    # теперь после исправления distribution измененные донаты добавлены в сессию
     distribution(
         new_charityproject,
         await donation_crud.get_by_fully_invested(
