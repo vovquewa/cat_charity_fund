@@ -1,15 +1,8 @@
 from sqlalchemy import Column, ForeignKey, Integer, Text
 
-from app.models.basefields import BaseFieldsModel
+from app.models.investment import InvestmentModel
 
 
-class Donation(BaseFieldsModel):
+class Donation(InvestmentModel):
     user_id = Column(Integer, ForeignKey('user.id'))
     comment = Column(Text, nullable=True)
-
-    def __repr__(self):
-        return (
-            f'<Donation {self.id} {self.name} {self.description}, '
-            f'{self.create_date}, {self.close_date}, {self.full_amount}, '
-            f'{self.invested_amount}, {self.fully_invested}>'
-        )

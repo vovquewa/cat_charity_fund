@@ -44,12 +44,13 @@ async def create_donation(
         commit=False
     )
     donation.invested_amount = 0
-    distribution(
+    changed = distribution(
         donation,
         await charityproject_crud.get_by_fully_invested(
             session=session
         )
     )
+    session.add_all(changed)
     await session.commit()
     await session.refresh(donation)
     return donation
